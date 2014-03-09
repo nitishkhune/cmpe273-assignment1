@@ -59,13 +59,14 @@ public class BookResource {
 		bookDto.getLinks();
 		HashMap<String, Object> hashMap = new HashMap<String, Object>();
 		HashMap<String, Object> tempMap = new HashMap<String, Object>();
-		hashMap.put("book", tempMap);
-		tempMap.put("isbn", bookDto.getBook().getIsbn());
-		tempMap.put("title", bookDto.getBook().getTitle());
-		tempMap.put("language", bookDto.getBook().getLanguage());
-		tempMap.put("num-pages", bookDto.getBook().getNum_pages());
-		tempMap.put("status", bookDto.getBook().getStatus());
+		hashMap.put("links", bookDto.getLinks());
+		AuthorDto authorDto = new AuthorDto(bookDto.getBook().getAuthor());
+		for (Author authorObject : authorDto.getAuthorList()) {
+			authorDto.addLink(new LinkDto("view-author", "/books/" + isbn.get()
+					+ "/authors/" + authorObject.getId(), "GET"));
 
+		}
+		tempMap.put("authors", authorDto.getLinks());
 		if (bookDto.getBook().getReview() == null) {
 			tempMap.put("reviews", new ArrayList<String>());
 		} else {
@@ -79,16 +80,12 @@ public class BookResource {
 			}
 			tempMap.put("reviews", reviewDto.getLinks());
 		}
-		AuthorDto authorDto = new AuthorDto(bookDto.getBook().getAuthor());
-		for (Author authorObject : authorDto.getAuthorList()) {
-			authorDto.addLink(new LinkDto("view-author", "/books/" + isbn.get()
-					+ "/authors/" + authorObject.getId(), "GET"));
-
-		}
-		tempMap.put("authors", authorDto.getLinks());
-
-		hashMap.put("links", bookDto.getLinks());
-
+		tempMap.put("status", bookDto.getBook().getStatus());
+		tempMap.put("num-pages", bookDto.getBook().getNum_pages());
+		tempMap.put("language", bookDto.getBook().getLanguage());
+		tempMap.put("title", bookDto.getBook().getTitle());
+		tempMap.put("isbn", bookDto.getBook().getIsbn());
+		hashMap.put("book", tempMap);
 		return Response.status(200).entity(hashMap).build();
 	}
 
@@ -206,7 +203,7 @@ public class BookResource {
 		statusList.add("checked-out");
 		statusList.add("in-queue");
 		statusList.add("lost");
-		if (!statusList.contains(status)) {
+		if (!statusList.contains(status.toLowerCase())) {
 			return Response
 					.status(422)
 					.type("text/plain")

@@ -69,11 +69,12 @@ public class AuthorResource {
 
 		}
 		authorResponse = new AuthorDto(tempList);
+		
 		authorResponse.addLink(new LinkDto("view-author", location, "GET"));
 
 		HashMap<String, Object> map = new HashMap<String, Object>();
-
-		map.put("author", authorResponse.getAuthorList());
+	 
+		map.put("author", authorResponse.getAuthorList().get(0));
 		map.put("links", authorResponse.getLinks());
 
 		return Response.status(200).entity(map).build();

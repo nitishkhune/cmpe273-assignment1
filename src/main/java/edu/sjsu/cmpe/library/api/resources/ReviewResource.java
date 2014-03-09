@@ -87,7 +87,7 @@ public class ReviewResource {
 
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("links", bookResponse.getLinks());
-		return Response.status(200).entity(map).build();
+		return Response.status(201).entity(map).build();
 
 	}
 
