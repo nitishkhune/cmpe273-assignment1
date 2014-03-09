@@ -2,14 +2,12 @@ package edu.sjsu.cmpe.library.domain;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-
+@JsonPropertyOrder({"isbn" , "title" , "publication-date" , "language" , "num-pages" , "status" , "reviews" , "authors"})
 public class Book {
     private long isbn;
     @NotEmpty
@@ -24,8 +22,7 @@ public class Book {
     
     private List<Author> author;
     private List<Review> review;
-    private String status="available";
-    
+    private String status;
     // add more fields here
     @JsonProperty("num-pages")
     public int getNum_pages() {
@@ -90,31 +87,34 @@ public class Book {
 	this.title = title;
     }
     
-    @JsonProperty(value = "authors", required = true)
+    @JsonProperty("authors")
  	public List<Author> getAuthor() {
 		return author;
 	}
     
-    @JsonProperty(value = "authors" , required = true)
+    @JsonProperty("authors")
 	public void setAuthor(List<Author> author) {
-		this.author = author;
+    	
+    	
+    	this.author = author;
 	}
-    @JsonProperty(value = "status" , required = true)
+    @JsonProperty("status")
 	public String getStatus() {
 		return status;
 	}
     
-    @JsonProperty(value = "status" , required = true)
+    @JsonProperty("status")
 	public void setStatus(String status) {
-		this.status = status;
+    	
+		this.status = status.toLowerCase();
 	}
     
-    @JsonProperty(value = "reviews" , required = true)
+    @JsonProperty("reviews")
 	public List<Review> getReview() {
 		return review;
 	}
     
-    @JsonProperty(value = "reviews" , required = true)
+    @JsonProperty("reviews")
 	public void setReview(List<Review> review) {
 		this.review = review;
 	}

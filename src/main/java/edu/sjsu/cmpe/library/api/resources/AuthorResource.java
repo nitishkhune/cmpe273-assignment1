@@ -12,6 +12,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.dropwizard.jersey.params.LongParam;
 import com.yammer.metrics.annotation.Timed;
@@ -20,12 +21,12 @@ import edu.sjsu.cmpe.library.domain.Author;
 import edu.sjsu.cmpe.library.domain.Book;
 import edu.sjsu.cmpe.library.dto.AuthorDto;
 import edu.sjsu.cmpe.library.dto.LinkDto;
-import edu.sjsu.cmpe.library.dto.LinksDto;
 import edu.sjsu.cmpe.library.repository.BookRepositoryInterface;
 
 @Path("/v1/books/{isbn}/authors")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@JsonPropertyOrder({"isbn" , "title" , "publication-date" , "language" , "num-pages" , "status" , "reviews" , "authors" , "links"})
 public class AuthorResource {
 
 	private final BookRepositoryInterface bookRepository;

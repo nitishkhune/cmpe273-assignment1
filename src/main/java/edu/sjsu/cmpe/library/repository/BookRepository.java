@@ -1,11 +1,12 @@
 package edu.sjsu.cmpe.library.repository;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.validation.Valid;
 
 import edu.sjsu.cmpe.library.domain.Author;
 import edu.sjsu.cmpe.library.domain.Book;
@@ -21,7 +22,7 @@ public class BookRepository implements BookRepositoryInterface {
 	private int reviewId;
 
 	public BookRepository(ConcurrentHashMap<Long, Book> bookMap) {
-		/*checkNotNull(bookMap, "bookMap must not be null for BookRepository");*/
+		/* checkNotNull(bookMap, "bookMap must not be null for BookRepository"); */
 		bookInMemoryMap = bookMap;
 		isbnKey = 0;
 		authorId = 0;
@@ -54,7 +55,7 @@ public class BookRepository implements BookRepositoryInterface {
 	 */
 	@Override
 	public Book saveBook(Book newBook) {
-		/*checkNotNull(newBook, "newBook instance must not be null");*/
+		/* checkNotNull(newBook, "newBook instance must not be null"); */
 		// Generate new ISBN
 		Long isbn = generateISBNKey();
 		newBook.setIsbn(isbn);
@@ -62,7 +63,7 @@ public class BookRepository implements BookRepositoryInterface {
 		List<Author> authorList = newBook.getAuthor();
 		if (authorList != null && !authorList.isEmpty()) {
 			for (Author authorObject : authorList) {
-				authorObject.setId(generateAuthorId());
+				saveAuthor(authorObject);
 			}
 		}
 
@@ -70,6 +71,10 @@ public class BookRepository implements BookRepositoryInterface {
 		bookInMemoryMap.putIfAbsent(isbn, newBook);
 
 		return newBook;
+	}
+
+	private void saveAuthor(@Valid Author author) {
+		author.setId(generateAuthorId());
 	}
 
 	@Override
@@ -82,11 +87,11 @@ public class BookRepository implements BookRepositoryInterface {
 	@Override
 	public Book updateBook(Long isbn, String status) {
 
-		Book updateBook = getBookByISBN(isbn);
+		Book bookToUpdate = getBookByISBN(isbn);
 
-		updateBook.setStatus(status);
-		bookInMemoryMap.put(isbn, updateBook);
-		return updateBook;
+		bookToUpdate.setStatus(status);
+		bookInMemoryMap.put(isbn, bookToUpdate);
+		return bookToUpdate;
 
 	}
 
@@ -104,26 +109,24 @@ public class BookRepository implements BookRepositoryInterface {
 	public Review createReview(Long isbn, Review review) {
 
 		review.setId(generateReviewId());
-		/*List<Review> reviewList = new ArrayList<Review>();
-
-		reviewList.add(review);*/
+		/*
+		 * List<Review> reviewList = new ArrayList<Review>();
+		 * 
+		 * reviewList.add(review);
+		 */
 
 		Book bookReviewToUpdate = bookInMemoryMap.get(isbn);
-		if(bookReviewToUpdate.getReview() == null)
-		{
+		if (bookReviewToUpdate.getReview() == null) {
 			List<Review> reviewList = new ArrayList<Review>();
 			reviewList.add(review);
 			bookReviewToUpdate.setReview(reviewList);
-		}
-		else
-		{
-		List<Review> reviewList = bookReviewToUpdate.getReview();
-		reviewList.add(review);
-		bookReviewToUpdate.setReview(reviewList);
+		} else {
+			List<Review> reviewList = bookReviewToUpdate.getReview();
+			reviewList.add(review);
+			bookReviewToUpdate.setReview(reviewList);
 		}
 		return review;
 
 	}
-    	 
-     
+
 }

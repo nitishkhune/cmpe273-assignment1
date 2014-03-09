@@ -1,20 +1,21 @@
 package edu.sjsu.cmpe.library.domain;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.NotEmpty;
 
 public class Author {
 	
+	@NotNull
 	@NotEmpty
 	private String name;
-	private int id;
 	
+	private int id;
 	
 	public String getName() {
 		return name;
 	}
-
+	
 	public void setName(String name) {
 		this.name = name;
 	}

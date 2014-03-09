@@ -2,6 +2,7 @@ package edu.sjsu.cmpe.library.api.resources;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -16,6 +17,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.yammer.dropwizard.jersey.params.LongParam;
 import com.yammer.metrics.annotation.Timed;
 
@@ -31,6 +33,8 @@ import edu.sjsu.cmpe.library.repository.BookRepositoryInterface;
 @Path("/v1/books")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@JsonPropertyOrder({ "isbn", "title", "publication-date", "language",
+		"num-pages", "status", "reviews", "authors", "links" })
 public class BookResource {
 	/** bookRepository instance */
 	private final BookRepositoryInterface bookRepository;
@@ -84,7 +88,7 @@ public class BookResource {
 		tempMap.put("authors", authorDto.getLinks());
 
 		hashMap.put("links", bookDto.getLinks());
-		
+
 		return Response.status(200).entity(hashMap).build();
 	}
 
@@ -98,7 +102,7 @@ public class BookResource {
 				+ book.getIsbn(), "PUT"));
 		// add more links
 		bookResponse.addLink(new LinkDto("delete-book", "/books/"
-				+ book.getIsbn(), "GET"));
+				+ book.getIsbn(), "DELETE"));
 		bookResponse.addLink(new LinkDto("create-review", "/books/"
 				+ book.getIsbn() + "/reviews", "POST"));
 
@@ -114,6 +118,50 @@ public class BookResource {
 	@Timed(name = "create-book")
 	public Response createBook(@Valid Book request) {
 		// Store the new book in the BookRepository so that we can retrieve it.
+
+		String status;
+		if (request.getStatus() == null) {
+			status = "available";
+			request.setStatus(status);
+		} else {
+			status = request.getStatus();
+		}
+
+		final ArrayList<String> statusList = new ArrayList<String>();
+		statusList.add("available");
+		statusList.add("checked-out");
+		statusList.add("in-queue");
+		statusList.add("lost");
+		if (!statusList.contains(status)) {
+			return Response
+					.status(422)
+					.type("text/plain")
+					.entity("Invalid value for Status. Status can only be available/checked-out/in-queue/lost")
+					.build();
+		}
+
+	if (request.getAuthor() == null || request.getAuthor().size() == 0) {
+			return Response
+					.status(422)
+					.type("text/plain")
+					.entity("Author Field Empty !!!! Author Name is a required field")
+					.build();
+		} else {
+			List<Author> authorList = request.getAuthor();
+
+			for (Author authorObj : authorList) {
+				if (authorObj.getName() == null || authorObj.getName().length() == 0 ) {
+					return Response
+							.status(422)
+							.type("text/plain")
+							.entity("Author Field Empty !!!! Author Name is a required field")
+							.build();
+				}
+
+			}
+
+		}
+
 		Book savedBook = bookRepository.saveBook(request);
 
 		String location = "/books/" + savedBook.getIsbn();
@@ -122,7 +170,7 @@ public class BookResource {
 		bookResponse.addLink(new LinkDto("update-book", location, "PUT"));
 		// Add other links if needed
 
-		bookResponse.addLink(new LinkDto("delete-book", location, "GET"));
+		bookResponse.addLink(new LinkDto("delete-book", location, "DELETE"));
 		bookResponse.addLink(new LinkDto("create-review",
 				location + "/reviews", "POST"));
 
@@ -141,8 +189,9 @@ public class BookResource {
 		// String location = "/books/" + isbn;
 		BookDto bookResponse = new BookDto();
 		bookResponse.addLink(new LinkDto("create-book", "/books", "POST"));
-
-		return Response.status(200).entity(bookResponse).build();
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("links", bookResponse.getLinks());
+		return Response.status(200).entity(map).build();
 
 	}
 
@@ -150,7 +199,20 @@ public class BookResource {
 	@Path("/{isbn}")
 	@Timed(name = "update-book")
 	public Response updateBook(@PathParam("isbn") LongParam isbn,
-			@QueryParam("newStatus") String status) {
+			@QueryParam("status") String status) {
+
+		final ArrayList<String> statusList = new ArrayList<String>();
+		statusList.add("available");
+		statusList.add("checked-out");
+		statusList.add("in-queue");
+		statusList.add("lost");
+		if (!statusList.contains(status)) {
+			return Response
+					.status(422)
+					.type("text/plain")
+					.entity("Invalid value for Status. Status can only be available/checked-out/in-queue/lost")
+					.build();
+		}
 
 		Book updatedBook = bookRepository.updateBook(isbn.get(), status);
 
@@ -158,12 +220,17 @@ public class BookResource {
 		BookDto bookResponse = new BookDto(updatedBook);
 		bookResponse.addLink(new LinkDto("view-book", location, "GET"));
 		bookResponse.addLink(new LinkDto("update-book", location, "PUT"));
-		bookResponse.addLink(new LinkDto("delete-book", location, "GET"));
+		bookResponse.addLink(new LinkDto("delete-book", location, "DELETE"));
 		bookResponse.addLink(new LinkDto("create-review",
 				location + "/reviews", "POST"));
-		bookResponse.addLink(new LinkDto("view-all-reviews", location
-				+ "/reviews", "GET"));
-		return Response.status(200).entity(bookResponse).build();
+		if (bookResponse.getBook().getReview() != null
+				&& bookResponse.getBook().getReview().size() == 0) {
+			bookResponse.addLink(new LinkDto("view-all-reviews", location
+					+ "/reviews", "GET"));
+		}
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("links", bookResponse.getLinks());
+		return Response.status(200).entity(map).build();
 
 	}
 }

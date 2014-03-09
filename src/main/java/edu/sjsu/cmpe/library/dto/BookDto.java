@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import edu.sjsu.cmpe.library.domain.Book;
 
-
+@JsonPropertyOrder({"isbn" , "title" , "publication-date" , "language" , "num-pages" , "status" , "reviews" , "authors" , "links"})
 public class BookDto extends LinksDto {
     private Book book;
 

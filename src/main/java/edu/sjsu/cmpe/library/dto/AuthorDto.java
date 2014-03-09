@@ -3,7 +3,6 @@ package edu.sjsu.cmpe.library.dto;
 import java.util.List;
 
 import edu.sjsu.cmpe.library.domain.Author;
-import edu.sjsu.cmpe.library.domain.Review;
 
 public class AuthorDto extends LinksDto {
 
